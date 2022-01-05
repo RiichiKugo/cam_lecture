@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no" />
+    <title>Joystick Example</title>
+  </head>
+
+  <body onload="init_ros();">
+      <div id="video"></div>
+            <div style="margin-left:10%;margin-right:10%;">
+            <h3>モデリングをスタート</h3>
+            <div style="margin-left:12%;">
+            <input type="button" id="mode_switch" value="撮影方法を選択してください（クリック）" onclick="toggle()" style="width:45%;padding:10px;font-size:30px;">
+            </div>
+            <div style="margin-left:10%;margin-right:10%;">
+              <h3>ロボットを動かす</h3>
+            </div>
+            <div style="margin-left:10%;margin-right:10%;">
+                <h3>カメラを動かす（縦方向）</h3>
+              </div>
+              <div style="margin-left:10%;margin-right:10%;">
+                <input id="camera_up" type="button" style="width:45%;padding:10px;font-size:30px;" value="↑" />
+                <input id="camera_down"type="button" style="width:45%;padding:10px;font-size:30px;" value="↓" />
+                </div>
+            
+            <div style="margin-left:10%;margin-right:10%;">
+            <input id="s_modeling" type="button" style="width:80%;padding:20px;font-size:20px;" value="Start Modeling" />
+            </div>
+
+            <div id="joystick"></div>
+            
+            <div style="margin-left:10%;margin-right:10%;">
+            <h2>
+            <a href="cropexam.html"id="model_edit1">モデルを編集する</a>
+            </h2>
+            </div>
+
+            <script>
+              document.getElementById("model_edit1").addEventListener("click",function(e){
+              //e.preventDefault();
+              let check = confirm("モデル編集画面に移行します");
+                if(!check){
+                  e.preventDefault();
+                }
+              });
+            </script>
+
+
+  </body>
+       
+  <script type="text/javascript" src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+  <script type="text/javascript" src="http://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+
+  <script type="text/javascript" src="https://static.robotwebtools.org/mjpegcanvasjs/current/mjpegcanvas.min.js"></script>
+
+
+
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.7.3/nipplejs.js"></script>
+  
+  <script type="text/javascript" src="webjoy.js"></script>
+
+
+</html>
+
