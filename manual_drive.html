@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no" />
+    <title>Manual Driving</title>
+  </head>
+
+  <body onload="init_ros();">
+    <div id="video"></div>
+      
+      <div style="margin-left:10%;margin-right:10%;">
+          <h4>ロボットを動かす</h4>
+        </div>
+       <div style="margin-left:10%;margin-right:10%;">
+        <input id="robot_move_left" type="button" style="width:30%;padding:10px;font-size:20px;" value="←" />
+        <input id="robot_move_front" type="button" style="width:30%;padding:10px;font-size:20px;" value="↑" />
+        <input id="robot_move_right" type="button" style="width:30%;padding:10px;font-size:20px;" value="→" />
+        </div>
+        <div style="margin-left:10%;margin-right:10%;">
+            <h4>カメラを動かす（縦方向）</h4>
+          </div>
+          <div style="margin-left:10%;margin-right:10%;">
+            <input id="camera_up" type="button" style="width:45%;padding:10px;font-size:20px;" value="↑" />
+            <input id="camera_down"type="button" style="width:45%;padding:10px;font-size:20px;" value="↓" />
+            </div>
+            <div>
+              <input id="extra_modeling" type="button" style="width:100%;padding:20px;font-size:20px;" value="３次元モデルを再構成" />
+              </div>            
+            <div>
+            <h2 style="text-align:center">
+            <a href="cropexam.html" id="model_edit2">モデルを編集する</a>
+            </h2>
+            </div>
+           
+
+            <script>
+              document.getElementById("model_edit2").addEventListener("click",function(e){
+              //e.preventDefault();
+              let check = confirm("モデル編集画面に移行します");
+                if(!check){
+                  e.preventDefault();
+                }
+              });
+            </script>
+
+            
+
+
+  </body>
+       
+  <script type="text/javascript" src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+  <script type="text/javascript" src="http://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+
+  <script type="text/javascript" src="https://static.robotwebtools.org/mjpegcanvasjs/current/mjpegcanvas.min.js"></script>
+
+
+
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.7.3/nipplejs.js"></script>
+  
+  <script type="text/javascript" src="webjoy2.js"></script>
+
+
+</html>
+
