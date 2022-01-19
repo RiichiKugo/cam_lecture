@@ -14,40 +14,49 @@
 <script src="three/OBJLoader.js"></script>
 <script src="three/MTLLoader.js"></script>
 <script src="three/PLYLoader.js"></script>
-<script src="three/PLYExporter.js"></script>
+
 <script src="three/TrackballControls.js"></script>
-<script src="three/THREE.CSG.js"></script>
+
+
 
 <div>
-<label>X<input type="range" id="sliderWidthRight" step="0.01" min="0" max="1" value="1" style="height:20px;width:85%;"></label>
-<!--<input type="range" id="sliderWidthLeft" step="0.01" min="0" max="1" value="1">-->
-
-</div>
-<div>
-  <label>Y<input type="range" id="sliderHeightRight" step="0.01" min="0" max="1" value="1"style="height:20px;width:85%;"></label>
-  <!--<input type="range" id="sliderHeightLeft" step="0.01" min="0" max="1" value="1">  -->
-  </div>
-  <div>
-
-    <label>Z<input type="range" id="sliderDepthRight" step="0.01" min="0" max="1" value="1"style="height:20px;width:85%;"></label>
-    <!--<input type="range" id="sliderDepthLeft" step="0.01" min="0" max="1" value="1">-->
-    </div>
-<div>
-<input type="button" value="CropMode:ON" id="Cropmode"style="padding:10px;font-size:15px;">
+<input type="button" value="切り抜き機能を使用" id="Cropmode"style="padding:10px;font-size:15px;">
 <input type="button" value="切り抜き" id="cropbutton"style="padding:10px;font-size:15px;">
 </div>
+
+<div id = "X_bar">
+  <label>X<input type="range" id="sliderWidthRight" step="0.001" min="0" max="1" value="1" style="height:20px;width:85%;"></label>
+  <!--<input type="range" id="sliderWidthLeft" step="0.01" min="0" max="1" value="1">-->
+  
+  </div>
+  <div id="Y_bar">
+    <label>Y<input type="range" id="sliderHeightRight" step="0.001" min="0" max="1" value="1"style="height:20px;width:85%;"></label>
+    <!--<input type="range" id="sliderHeightLeft" step="0.01" min="0" max="1" value="1">  -->
+    </div>
+  <div id = "Z_bar">
+
+    <label>Z<input type="range" id="sliderDepthRight" step="0.001" min="0" max="1" value="1"style="height:20px;width:85%;"></label>
+    <!--<input type="range" id="sliderDepthLeft" step="0.01" min="0" max="1" value="1">-->
+    </div>
+  <div id = "Z_bar2">
+
+    <label>Z<input type="range" id="sliderDepthRight2" step="0.001" min="0" max="1" value="1"style="height:20px;width:85%;"></label>
+    <!--<input type="range" id="sliderDepthLeft" step="0.01" min="0" max="1" value="1">-->
+    </div>
+  <div>
 <div>
-  <input type="button" value="保存" id="save_button"style="width:50%;padding:10px;font-size:15px;">
+  <input type="button" value="戻る" id="resetbutton"style="width:30%;padding:10px;font-size:15px;">
+  <input type="button" value="保存" id="save_button"style="width:30%;padding:10px;font-size:15px;">
 
 <div>
   <h5 style="text-align:center">
-  <a href="manual_drive.html" id="re_take">画像を追加する（モデルを再構築）</a>
+  <a href="manual_drive.html" id="re_take">追加撮影を行う</a>
   </h5>
 </div>
 
   <div>
     <h5 style="text-align:center">
-    <a href="index.html" id="start_over">もう一度やり直す（はじめから）</a>
+    <a href="index.html" id="start_over">撮影を初めからやり直す</a>
     </h5>
   </div>
 <div style="margin-left:10%;margin-right:10%;">
@@ -85,7 +94,7 @@ document.getElementById("start_over").addEventListener("click",function(e){
   }
 });
 
-document.getElementById("cropbutton").style.visibility ="hidden";
+document.getElementById("cropbutton").style.display ="none";
 
  var renderer = new THREE.WebGLRenderer({
   canvas: document.querySelector("#canvas"),
@@ -140,7 +149,8 @@ document.getElementById("cropbutton").style.visibility ="hidden";
   let localPlane6 = new THREE.Plane();
   
 var loader = new THREE.PLYLoader();  
-loader.load( './three/male02/integrated_rits.ply', function( geometry ){
+loader.load( './three/male02/integrated.ply', function( geometry ){
+  //loader.load( './three/male02/zabuton_desk_pet.ply', function( geometry ){
     //const texture = loader.load('./three/male02/cal.jpg');
     localPlane1 = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 2.5);
     localPlane2 = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1.5);
@@ -192,7 +202,7 @@ loader.load( './three/male02/integrated_rits.ply', function( geometry ){
                color: 0x150000, //球の色黒
                wireframe: true
       }));*/
-     // scene.add(box3);
+    //scene.add(box3);
 });
 
 
@@ -209,6 +219,14 @@ var Z1;
 var X2;
 var Y2;
 var Z2;
+
+X1 =world.x+size.x*1/2;
+Y1 =world.y+size.y*1/2;
+Z1 =world.z+size.z*1/2;
+X2 =world.x-size.x*1/2;
+Y2 =world.y-size.y*1/2;
+Z2 =world.z-size.z*1/2;
+
 /*
       objects.push(cube);
       var world = cube.getWorldPosition(new THREE.Vector3());
@@ -269,30 +287,82 @@ var planeX = new THREE.Plane();
  var mouseoveredObj;
  // ドラッグしているオブジェクト
  var draggedObj;
+ var XXX=0;
+ var YYY=0;
 
-
- function inputChange(){
+ function inputChange1(){
     // イベントが発生した時の処理
     cube.scale.set(sliderWidthRight.value,sliderHeightRight.value,sliderDepthRight.value);
+    XXX = ((1 - sliderDepthRight.value) * cube.geometry.parameters.depth)/2.0;
+    cube.position.set(0,0,0-XXX+YYY);
+
+    Z1 =cube.position.z+size.z*cube.scale.z/2;
+    Z2 =world.z-size.z*1/2;
+    
+    localPlane1.constant = X1;
+    localPlane2.constant = Y1;
+    localPlane3.constant = Z1;
+    localPlane4.constant = -X2;
+    localPlane5.constant = -Y2;
+    localPlane6.constant = -Z2;
+    material.clippingPlanes = [localPlane1,localPlane2,localPlane3,localPlane4,localPlane5,localPlane6];
     
 
 }
 
+function inputChange2(){
+    // イベントが発生した時の処理
+    cube.scale.set(sliderWidthRight.value,sliderHeightRight.value,sliderDepthRight2.value);
+    YYY = ((1 - sliderDepthRight2.value) * cube.geometry.parameters.depth)/2.0;
+    cube.position.set(0,0,0+YYY-XXX);
+
+    Z1 =world.z+size.z*1/2;
+    Z2 =cube.position.z-size.z*cube.scale.z/2;
+
+    localPlane1.constant = X1;
+    localPlane2.constant = Y1;
+    localPlane3.constant = Z1;
+    localPlane4.constant = -X2;
+    localPlane5.constant = -Y2;
+    localPlane6.constant = -Z2;
+    material.clippingPlanes = [localPlane1,localPlane2,localPlane3,localPlane4,localPlane5,localPlane6];
+    
+
+}
+
+
 //slidar bar 類
 let sliderWidthRight = document.getElementById('sliderWidthRight');
-sliderWidthRight.addEventListener('input', inputChange);
+sliderWidthRight.addEventListener('input', inputChange1);
+
+let X_bar = document.getElementById('X_bar');
+X_bar.style.display ="none";
 
 //let sliderWidthLeft = document.getElementById('sliderWidthLeft');
 //sliderWidthLeft.addEventListener('input', inputChange);
 
-let sliderLeftRight = document.getElementById('sliderHeightRight');
-sliderHeightRight.addEventListener('input', inputChange);
+let sliderHeightRight = document.getElementById('sliderHeightRight');
+sliderHeightRight.addEventListener('input', inputChange1);
+
+let Y_bar = document.getElementById('Y_bar');
+Y_bar.style.display ="none";
 
 //let sliderHeightLeft = document.getElementById('sliderHeightLeft');
 //sliderHeightLeft.addEventListener('input', inputChange);
 
 let sliderDepthRight = document.getElementById('sliderDepthRight');
-sliderDepthRight.addEventListener('input', inputChange);
+sliderDepthRight.addEventListener('input', inputChange1);
+
+let sliderDepthRight2 = document.getElementById('sliderDepthRight2');
+sliderDepthRight2.addEventListener('input', inputChange2);
+
+
+sliderWidthRight.value ="1";
+sliderHeightRight.value ="1";
+sliderDepthRight.value ="1";
+
+let Z_bar = document.getElementById('Z_bar');
+Z_bar.style.display ="none";
 
 //let sliderDepthLeft = document.getElementById('sliderDepthLeft');
 //sliderDepthLeft.addEventListener('input', inputChange);
@@ -303,6 +373,34 @@ let cropping_button = document.getElementById('cropbutton');
 cropping_button.addEventListener('click', croppingClick);
 
 
+let reset_button = document.getElementById('resetbutton');
+reset_button.addEventListener('click', reset_def);
+reset_button.style.display ="none";
+
+let save_button = document.getElementById('save_button');
+save_button.style.display ="none";
+
+
+function reset_def(){
+  cube.scale.set(1,1,1);
+  cube.position.set(0,0,0);
+  croppingClick();
+  scene.remove(cube);
+  reset_button.style.display ="none";
+  cropmode_button.disabled=false;
+  cropmode_button.value="切り抜き機能を使用";
+  X_bar.style.display ="none";
+  Y_bar.style.display ="none";
+  Z_bar.style.display ="none";
+  sliderWidthRight.value ="1";
+  sliderHeightRight.value ="1";
+  sliderDepthRight.value ="1";
+  sliderDepthRight2.value ="1";
+  save_button.style.display ="none";
+  XXX=0;
+  YYY=0;
+}
+/*
 var saveData = (function () {
   var a = document.createElement("a");
   document.body.appendChild(a);
@@ -316,8 +414,12 @@ var saveData = (function () {
                       window.URL.revokeObjectURL(url);
                     };
               }());
-
+*/
 function croppingClick(){
+  reset_button.style.display ="inline";
+  save_button.style.display ="inline";
+  cropping_button.style.display ="none";
+
   X1 =world.x+size.x*cube.scale.x/2;
   Y1 =world.y+size.y*cube.scale.y/2;
   Z1 =world.z+size.z*cube.scale.z/2;
@@ -331,6 +433,11 @@ function croppingClick(){
   localPlane5.constant = -Y2;
   localPlane6.constant = -Z2;
   material.clippingPlanes = [localPlane1,localPlane2,localPlane3,localPlane4,localPlane5,localPlane6];
+
+  scene.remove(cube);
+
+
+
   
 
 /*
@@ -371,15 +478,24 @@ cropmode_button.addEventListener('click', Cropmode);
 
 function Cropmode(){
   
-	if(cropping_button.style.visibility=="visible"){
-		// hiddenで非表示
-    cropping_button.style.visibility ="hidden";
-    cropmode_button.value="Cropmode:ON";
-    scene.remove(cube);
+	if(cropping_button.style.display=="inline"){
+		// noneで非表示
+    cropping_button.style.display ="none";
+    reset_button.style.display ="none";
+    cropmode_button.value="切り抜き機能を使用";
+    //scene.remove(cube);
 	}else{
-		// visibleで表示
-		cropping_button.style.visibility ="visible";
-    cropmode_button.value="Cropmode:OFF";
+		// inlineで表示
+		cropping_button.style.display ="inline";
+    cropmode_button.value="切り抜き機能を使用中";
+    X_bar.style.display ="block";
+    Y_bar.style.display ="block";
+    Z_bar.style.display ="block";
+
+
+
+    cropmode_button.disabled=true;
+  
     const geometry1 = new THREE.BoxGeometry(size.x,size.y,size.z);
     cube = new THREE.Mesh(                                   
      geometry1,                          
