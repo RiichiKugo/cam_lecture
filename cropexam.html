@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1"/>
+ <title>three.js</title>
+ <meta name="robots" content="noindex,follow">
+</head>
+<body style="position:fixed;">
+  
+ <canvas id="canvas"></canvas>
+ <script src="three/three.min.js"></script>
+<script src="three/OrbitControls.js"></script>
+<script src="three/OBJLoader.js"></script>
+<script src="three/MTLLoader.js"></script>
+<script src="three/PLYLoader.js"></script>
+
+<script src="three/TrackballControls.js"></script>
+
+
+
+<div>
+<input type="button" value="切り抜き機能を使用" id="Cropmode"style="padding:10px;font-size:15px;">
+<input type="button" value="切り抜き" id="cropbutton"style="padding:10px;font-size:15px;">
+</div>
+
+<div id = "X_bar">
+  <label>赤(+)<input type="range" id="sliderWidthRight" step="0.01" min="0" max="1" value="1" style="height:20px;width:85%;"></label>
+  <!--<input type="range" id="sliderWidthLeft" step="0.01" min="0" max="1" value="1">-->
+  </div>
+<div id = "X_bar2">
+  <label>赤(−)<input type="range" id="sliderWidthRight2" step="0.01" min="0" max="1" value="1" style="height:20px;width:85%;"></label>
+  <!--<input type="range" id="sliderWidthLeft" step="0.01" min="0" max="1" value="1">-->
+  </div>
+  <div id="Y_bar">
+    <label>緑(+)<input type="range" id="sliderHeightRight" step="0.01" min="0" max="1" value="1"style="height:20px;width:85%;"></label>
+    <!--<input type="range" id="sliderHeightLeft" step="0.01" min="0" max="1" value="1">  -->
+    </div>
+  <div id="Y_bar2">
+    <label>緑(−)<input type="range" id="sliderHeightRight2" step="0.01" min="0" max="1" value="1"style="height:20px;width:85%;"></label>
+    <!--<input type="range" id="sliderHeightLeft" step="0.01" min="0" max="1" value="1">  -->
+    </div>
+  <div id = "Z_bar">
+
+    <label>青(+)<input type="range" id="sliderDepthRight" step="0.01" min="0" max="1" value="1"style="height:20px;width:85%;"></label>
+    <!--<input type="range" id="sliderDepthLeft" step="0.01" min="0" max="1" value="1">-->
+    </div>
+  <div id = "Z_bar2">
+
+    <label>青(−)<input type="range" id="sliderDepthRight2" step="0.01" min="0" max="1" value="1"style="height:20px;width:85%;"></label>
+    <!--<input type="range" id="sliderDepthLeft" step="0.01" min="0" max="1" value="1">-->
+    </div>
+  <div>
+<div>
+  <input type="button" value="戻る" id="resetbutton"style="width:30%;padding:10px;font-size:15px;">
+  <input type="button" value="保存" id="save_button"style="width:30%;padding:10px;font-size:15px;">
+
+<div id = "tuika">
+  <h5 style="text-align:center">
+  <a href="manual_drive.html" id="re_take">追加撮影を行う</a>
+  </h5>
+</div>
+
+  <div id = "yari">
+    <h5 style="text-align:center">
+    <a href="index.html" id="start_over">撮影を初めからやり直す</a>
+    </h5>
+  </div>
+<div style="margin-left:10%;margin-right:10%;">
+ <script>
+     //基本設定
+ var width = 450;
+ var height = 200;
+/*
+  var objection_detect_id_msg = new ROSLIB.Topic({
+          ros : ros,
+          name : 'objection_detect_id',
+          messageType : 'urg_test/objection_detect_id'
+      });
+  var OBJ_msgs = new ROSLIB.Message();
+
+document.getElementById("re_take").addEventListener("click",function(e){
+  //e.preventDefault();
+  let check = confirm("マニュアル撮影を開始しますか？");
+  if(!check){
+    e.preventDefault();
+  }
+  OBJ_msgs = new ROSLIB.Message({
+                moving : 5,
+                move_ptn : 0,
+                radius : 0
+        });
+
+});
+*/
+document.getElementById("start_over").addEventListener("click",function(e){
+  //e.preventDefault();
+  let check = confirm("もう一度初めからやり直しますか？");
+  if(!check){
+    e.preventDefault();
+  }
+});
+
+document.getElementById("cropbutton").style.display ="none";
+
+ var renderer = new THREE.WebGLRenderer({
+  canvas: document.querySelector("#canvas"),
+  alpha: true
+ });
+ renderer.setPixelRatio(window.devicePixelRatio);
+ renderer.setSize(width, height);
+  renderer.localClippingEnabled = true;
+  document.body.appendChild( renderer.domElement );
+ var scene = new THREE.Scene();
+  scene.add(new THREE.AxesHelper(5));
+  var objects = [];
+
+ // カメラ設定
+ var camera = new THREE.PerspectiveCamera(30,width / height,1,1000000);
+ //camera.position.set(1,100, 50); 
+  camera.position.set(-2,-1,-7); 
+  //camera.position.set(1,100,1000); 
+
+  // TrackballControlsインスタンス作成
+  var controls = new THREE.TrackballControls( camera ,renderer.domElement);
+
+ // ライト設定
+ ambientLight = new THREE.AmbientLight(0xffffff);
+ hemisphereLight = new THREE.HemisphereLight(0xffffff,0x4169e1, 0.15);
+ scene.add(hemisphereLight);
+ scene.add(ambientLight);
+
+ // ★追加 マウス操作
+ //var Orbitcontrols = new THREE.OrbitControls(camera,renderer.domElement);
+ //Orbitcontrols.enableZoom = true;
+
+ var obj = new THREE.Mesh();
+  var plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0.5);
+  var planeHelper = new THREE.PlaneHelper(plane,1, 0xffff00);
+  //scene.add( planeHelper );
+
+  var boxHelper;
+
+  var mesh;
+
+  var size;
+
+  var box3;
+
+  var material = new THREE.MeshBasicMaterial();
+  let localPlane1 = new THREE.Plane();
+  let localPlane2 = new THREE.Plane();
+  let localPlane3 = new THREE.Plane();
+  let localPlane4 = new THREE.Plane();
+  let localPlane5 = new THREE.Plane();
+  let localPlane6 = new THREE.Plane();
+  
+var loader = new THREE.PLYLoader();  
+loader.load( './three/male02/integrated_rits.ply', function( geometry ){
+  //loader.load( './three/male02/zabuton_desk_pet.ply', function( geometry ){
+    //const texture = loader.load('./three/male02/cal.jpg');
+    localPlane1 = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 2.5);
+    localPlane2 = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1.5);
+    localPlane3 = new THREE.Plane(new THREE.Vector3(0, 0, -1), 2);
+    localPlane4 = new THREE.Plane(new THREE.Vector3(1, 0, 0), 0.5);
+    localPlane5 = new THREE.Plane(new THREE.Vector3(0, 1, 0), 1.5);
+    localPlane6 = new THREE.Plane(new THREE.Vector3(0, 0, 1), 2);
+    material = new THREE.MeshBasicMaterial( { color: 0xffffff, vertexColors: THREE.VertexColors} ); 
+    //material.map= texture; 
+    //var material = new THREE.MeshBasicMaterial( { color: 0xffffff, vertexColors: THREE.VertexColors, clippingPlanes: [localPlane1,localPlane2]} );       
+    material.wireframe = false; 
+    console.log(localPlane1.constant);         
+    mesh = new THREE.Mesh( geometry, material);          
+    mesh.position.set(0., 0., 0.);
+    //mesh.position.set(0., 0., -1);          
+    mesh.scale.set(1., 1., 1.);          
+    mesh.castShadow = true;    
+    mesh.rotation.z = Math.PI;    
+    scene.add( mesh );
+  
+
+    box3 = new THREE.Box3();
+    var box4 = new THREE.Box3();
+    var a = new THREE.Vector3( 1, 1, 1 );
+    var b = new THREE.Vector3( 0, 0, 0 );
+    size = new THREE.Vector3(); // create once and reuse
+    box3.setFromObject(mesh); // or from mesh, same answer
+    console.log(box3 );
+    //console.log(box3.min.x);  アクセスOK
+
+    box3.getSize( size ); // pass in size so a new Vector3 is not allocated
+    console.log(size )
+    
+    mesh.position.set(size.x/2-(Math.abs(box3.max.x)),size.y/2-(Math.abs(box3.max.y)),-size.z/2); 
+
+    //box3.set(b,box3.max);
+    console.log(box3 );
+    //box3.min.set(0,0,0);
+    //box4.set(b,a);
+    //scene.add(box4);
+    
+    //boxHelper = new THREE.BoxHelper( mesh,0x990000 );
+    //console.log(boxHelper );
+    //scene.add( boxHelper );
+    //box3.copy( mesh.geometry.boundingBox ).applyMatrix4( mesh.matrixWorld );
+    /*var box_cube = new THREE.Mesh(                                   
+     box3,                          
+     new THREE.MeshPhongMaterial({                                      
+               color: 0x150000, //球の色黒
+               wireframe: true
+      }));*/
+    //scene.add(box3);
+});
+
+
+
+
+
+
+
+var cube;
+var world;
+var X1;
+var Y1;
+var Z1;
+var X2;
+var Y2;
+var Z2;
+
+/*
+      objects.push(cube);
+      var world = cube.getWorldPosition(new THREE.Vector3());
+      console.log(world.x);
+      console.log(world.y);
+      console.log(world.z);
+      
+      console.log(cube.geometry.parameters.width+":"+cube.geometry.parameters.height+":"+cube.geometry.parameters.depth);
+      var X1 =world.x+cube.geometry.parameters.width/2;
+      var Y1 =world.y+cube.geometry.parameters.height/2;
+      var Z1 =world.z+cube.geometry.parameters.depth/2;
+      var X2 =world.x-cube.geometry.parameters.width/2;
+      var Y2 =world.y-cube.geometry.parameters.height/2;
+      var Z2 =world.z-cube.geometry.parameters.depth/2;
+      console.log("X1="+X1);
+      console.log("Y1="+Y1);//floatで表示される
+      console.log("Z1="+Z1);
+      console.log("X2="+X2);
+      console.log("Y2="+Y2);
+      console.log("Z2="+Z2);
+*/
+
+
+      //planeHelpers
+  var plane1 = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 2.5);
+  var planeHelper1 = new THREE.PlaneHelper(plane1,3, 0x990000);
+  //scene.add( planeHelper1 );
+
+  var plane2 = new THREE.Plane(new THREE.Vector3(0, 1, 0), -Y1);
+  var planeHelper2 = new THREE.PlaneHelper(plane2,3, 0x990000);
+  //scene.add( planeHelper2 );
+
+  var plane3 = new THREE.Plane(new THREE.Vector3(0, 0, 1), -Z1);
+  var planeHelper3 = new THREE.PlaneHelper(plane3,3, 0x990000);
+  //scene.add( planeHelper3 );
+
+  var plane4 = new THREE.Plane(new THREE.Vector3(1, 0, 0), -X2);
+  var planeHelper4 = new THREE.PlaneHelper(plane4,3, 0x990000);
+  //scene.add( planeHelper4 );
+
+  var plane5 = new THREE.Plane(new THREE.Vector3(0, 2, 0), -Y2);
+  var planeHelper5 = new THREE.PlaneHelper(plane5,3, 0x990000);
+  //scene.add( planeHelper5 );
+
+  var plane6 = new THREE.Plane(new THREE.Vector3(0, 0, 0), -Z2);
+  var planeHelper6 = new THREE.PlaneHelper(plane6,3, 0x990000);
+  //scene.add( planeHelper6 );
+
+  // この平面に対してオブジェクトを平行に動かす
+var planeX = new THREE.Plane();
+ 
+ var raycaster = new THREE.Raycaster();
+ var mouse = new THREE.Vector2();
+ var offset = new THREE.Vector3();
+ var intersection = new THREE.Vector3();
+  
+ // マウスオーバーしているオブジェクト
+ var mouseoveredObj;
+ // ドラッグしているオブジェクト
+ var draggedObj;
+ var XX1=0;
+ var XX2=0;
+ var YY1=0;
+ var YY2=0;
+ var ZZ1=0;
+ var ZZ2=0;
+ var count_Z1=0;
+ var count_Z2=0;
+
+ function inputChange_X1(){
+  var a= 1.0-(sliderWidthRight.value*sliderWidthRight2.value);
+  XX1 =a * cube.geometry.parameters.width/2.0;
+  cube.position.set(XX2-XX1,YY2-YY1,ZZ2-ZZ1);
+  cube.scale.set(sliderWidthRight.value,sliderHeightRight.value,sliderDepthRight.value);
+
+  X1 =cube.position.x+size.x*cube.scale.x/2;
+
+  localPlane1.constant = X1;
+  localPlane2.constant = Y1;
+  localPlane3.constant = Z1;
+  localPlane4.constant = -X2;
+  localPlane5.constant = -Y2;
+  localPlane6.constant = -Z2;
+  material.clippingPlanes = [localPlane1,localPlane2,localPlane3,localPlane4,localPlane5,localPlane6];
+ }
+ function inputChange_X2(){
+  var a= 1.0-(sliderWidthRight.value*sliderWidthRight2.value);
+  XX2 =a * cube.geometry.parameters.width/2.0;
+  cube.position.set(XX2-XX1,YY2-YY1,ZZ2-ZZ1);
+  cube.scale.set(sliderWidthRight2.value,sliderHeightRight.value,sliderDepthRight.value);
+
+  X2 =cube.position.x-size.x*cube.scale.x/2;
+
+  localPlane1.constant = X1;
+  localPlane2.constant = Y1;
+  localPlane3.constant = Z1;
+  localPlane4.constant = -X2;
+  localPlane5.constant = -Y2;
+  localPlane6.constant = -Z2;
+  material.clippingPlanes = [localPlane1,localPlane2,localPlane3,localPlane4,localPlane5,localPlane6];
+ }
+ function inputChange_Y1(){
+  var a= 1.0-(sliderHeightRight.value*sliderHeightRight2.value);
+  YY1 =a * cube.geometry.parameters.height/2.0;
+  cube.position.set(XX2-XX1,YY2-YY1,ZZ2-ZZ1);
+  cube.scale.set(sliderWidthRight2.value,sliderHeightRight.value,sliderDepthRight.value);
+
+  Y1 =cube.position.y+size.y*cube.scale.y/2;
+
+  localPlane1.constant = X1;
+  localPlane2.constant = Y1;
+  localPlane3.constant = Z1;
+  localPlane4.constant = -X2;
+  localPlane5.constant = -Y2;
+  localPlane6.constant = -Z2;
+  material.clippingPlanes = [localPlane1,localPlane2,localPlane3,localPlane4,localPlane5,localPlane6];
+ }
+ function inputChange_Y2(){
+  var a= 1.0-(sliderHeightRight.value*sliderHeightRight2.value);
+  YY2 =a * cube.geometry.parameters.height/2.0;
+  cube.position.set(XX2-XX1,YY2-YY1,ZZ2-ZZ1);
+  cube.scale.set(sliderWidthRight2.value,sliderHeightRight.value,sliderDepthRight.value);
+
+  Y2 =cube.position.y-size.y*cube.scale.y/2;
+
+  localPlane1.constant = X1;
+  localPlane2.constant = Y1;
+  localPlane3.constant = Z1;
+  localPlane4.constant = -X2;
+  localPlane5.constant = -Y2;
+  localPlane6.constant = -Z2;
+  material.clippingPlanes = [localPlane1,localPlane2,localPlane3,localPlane4,localPlane5,localPlane6];
+ }
+ 
+ function inputChange_Z1(){
+    // イベントが発生した時の処理
+    var a= 1.0-(sliderDepthRight.value*sliderDepthRight2.value);
+    ZZ1 =a * cube.geometry.parameters.depth/2.0;
+    //XXX = ((1 - (sliderDepthRight.value*sliderDepthRight2.value)) * cube.geometry.parameters.depth)/2.0;
+    cube.position.set(XX2-XX1,YY2-YY1,ZZ2-ZZ1);
+    cube.scale.set(sliderWidthRight.value,sliderHeightRight.value,sliderDepthRight.value);
+    
+
+    Z1 =cube.position.z+size.z*cube.scale.z/2;
+    
+    localPlane1.constant = X1;
+    localPlane2.constant = Y1;
+    localPlane3.constant = Z1;
+    localPlane4.constant = -X2;
+    localPlane5.constant = -Y2;
+    localPlane6.constant = -Z2;
+    material.clippingPlanes = [localPlane1,localPlane2,localPlane3,localPlane4,localPlane5,localPlane6];
+    
+
+}
+
+function inputChange_Z2(){
+    // イベントが発生した時の処理
+    //console.log("CCCUBE====="+cube.geometry.parameters.depth)
+    var a= 1.0-(sliderDepthRight.value*sliderDepthRight2.value);
+    ZZ2 =a * cube.geometry.parameters.depth/2.0;
+    //YYY = ((1 - (sliderDepthRight.value*sliderDepthRight2.value)) * cube.geometry.parameters.depth)/2.0;
+    cube.position.set(XX2-XX1,YY2-YY1,ZZ2-ZZ1);
+    //console.log("chushin2222:"+((ZZZ-XXX)+YYY));
+    //console.log("chu:"+sliderDepthRight.value);
+    cube.scale.set(sliderWidthRight.value,sliderHeightRight.value,sliderDepthRight2.value);
+    
+
+    Z2 =cube.position.z-size.z*cube.scale.z/2;
+
+    localPlane1.constant = X1;
+    localPlane2.constant = Y1;
+    localPlane3.constant = Z1;
+    localPlane4.constant = -X2;
+    localPlane5.constant = -Y2;
+    localPlane6.constant = -Z2;
+    material.clippingPlanes = [localPlane1,localPlane2,localPlane3,localPlane4,localPlane5,localPlane6];
+    
+
+}
+
+
+//slidar bar 類
+let sliderWidthRight = document.getElementById('sliderWidthRight');
+sliderWidthRight.addEventListener('input', inputChange_X1);
+let sliderWidthRight2 = document.getElementById('sliderWidthRight2');
+sliderWidthRight2.addEventListener('input', inputChange_X2);
+
+let X_bar = document.getElementById('X_bar');
+X_bar.style.display ="none";
+let X_bar2 = document.getElementById('X_bar2');
+X_bar2.style.display ="none";
+
+//let sliderWidthLeft = document.getElementById('sliderWidthLeft');
+//sliderWidthLeft.addEventListener('input', inputChange);
+
+let sliderHeightRight = document.getElementById('sliderHeightRight');
+sliderHeightRight.addEventListener('input', inputChange_Y1);
+let sliderHeightRight2 = document.getElementById('sliderHeightRight2');
+sliderHeightRight2.addEventListener('input', inputChange_Y2);
+
+let Y_bar = document.getElementById('Y_bar');
+Y_bar.style.display ="none";
+let Y_bar2 = document.getElementById('Y_bar2');
+Y_bar2.style.display ="none";
+
+//let sliderHeightLeft = document.getElementById('sliderHeightLeft');
+//sliderHeightLeft.addEventListener('input', inputChange);
+
+let sliderDepthRight = document.getElementById('sliderDepthRight');
+sliderDepthRight.addEventListener('input', inputChange_Z1);
+let sliderDepthRight2 = document.getElementById('sliderDepthRight2');
+sliderDepthRight2.addEventListener('input', inputChange_Z2);
+
+
+
+sliderWidthRight.value ="1";
+sliderHeightRight.value ="1";
+sliderDepthRight.value ="1";
+sliderWidthRight2.value ="1";
+sliderHeightRight2.value ="1";
+sliderDepthRight2.value ="1";
+
+let Z_bar = document.getElementById('Z_bar');
+Z_bar.style.display ="none";
+let Z_bar2 = document.getElementById('Z_bar2');
+Z_bar2.style.display ="none";
+
+let tuikaURL = document.getElementById('tuika');
+let yariURL = document.getElementById('yari');
+
+
+
+
+//let sliderDepthLeft = document.getElementById('sliderDepthLeft');
+//sliderDepthLeft.addEventListener('input', inputChange);
+
+
+/////////////////////////////////////////////////////////////////////////////////////**************************///////////////////////////////////////////////////////////////
+let cropping_button = document.getElementById('cropbutton');
+cropping_button.addEventListener('click', croppingClick);
+
+
+let reset_button = document.getElementById('resetbutton');
+reset_button.addEventListener('click', reset_def);
+reset_button.style.display ="none";
+
+let save_button = document.getElementById('save_button');
+save_button.style.display ="none";
+
+
+function reset_def(){
+  cube.scale.set(1,1,1);
+  cube.position.set(0,0,0);
+  /*************************************/
+  X1 =world.x+size.x*cube.scale.x/2;
+  Y1 =world.y+size.y*cube.scale.y/2;
+  Z1 =world.z+size.z*cube.scale.z/2;
+  X2 =world.x-size.x*cube.scale.x/2;
+  Y2 =world.y-size.y*cube.scale.y/2;
+  Z2 =world.z-size.z*cube.scale.z/2;
+
+  localPlane1.constant = X1;
+  localPlane2.constant = Y1;
+  localPlane3.constant = Z1;
+  localPlane4.constant = -X2;
+  localPlane5.constant = -Y2;
+  localPlane6.constant = -Z2;
+  material.clippingPlanes = [localPlane1,localPlane2,localPlane3,localPlane4,localPlane5,localPlane6];
+  /*********************************/
+
+
+  scene.remove(cube);
+  reset_button.style.display ="none";
+  cropmode_button.disabled=false;
+  cropmode_button.value="切り抜き機能を使用";
+  X_bar.style.display ="none";
+  Y_bar.style.display ="none";
+  Z_bar.style.display ="none";
+  X_bar2.style.display ="none";
+  Y_bar2.style.display ="none";
+  Z_bar2.style.display ="none";
+  sliderWidthRight.value ="1";
+  sliderHeightRight.value ="1";
+  sliderDepthRight.value ="1";
+  sliderDepthRight2.value ="1";
+  save_button.style.display ="none";
+  tuikaURL.style.display ="block";
+  yariURL.style.display ="block";
+  XXX=0;
+  YYY=0;
+}
+/*
+var saveData = (function () {
+  var a = document.createElement("a");
+  document.body.appendChild(a);
+  a.style = "display: none";
+  return function (data, fileName) {
+  var blob = new Blob([ data ], { type: "octet/stream" }),
+                      url = window.URL.createObjectURL(blob);
+                      a.href = url;
+                      a.download = fileName;
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                    };
+              }());
+*/
+function croppingClick(){
+  reset_button.style.display ="inline";
+  save_button.style.display ="inline";
+  cropping_button.style.display ="none";
+
+  scene.remove(cube);
+
+
+
+  
+
+/*
+  var csg_mesh = THREE.CSG.fromMesh(mesh);
+  var csg_cube = THREE.CSG.fromMesh(cube);
+  var result = csg_mesh.intersect(csg_cube);
+  var bufferGeometry = new THREE.BufferGeometry().fromGeometry( result );
+  */
+//  var re_mesh = THREE.CSG.toMesh(result, material);
+//  var re_mesh = THREE.CSG.toMesh(result, new THREE.Matrix4());
+//  var geometry = THREE.CSG.toGeometry(result);
+//re_mesh.material=new THREE.MeshPhongMaterial({color: 0xff00ff,vertexColors: THREE.VertexColors});
+  //scene.add(re_mesh);
+
+  
+
+/*
+  const exporter = new THREE.PLYExporter();
+  const plydata = exporter.parse(re_mesh);
+  saveData(plydata,"aaa.ply");
+*/
+  //scene.add( mesh );
+  //exporter.parse(mesh,data => console.log(data), { binary: true, excludeAttributes: [ 'color' ], littleEndian: true });
+  //downloadFile(data);
+  //exporter.parse( mesh, function ( result ) {
+  //  saveString( result, 'box.ply' );
+  //} );
+
+}
+
+
+function updateCube(){
+  world = cube.getWorldPosition(new THREE.Vector3());
+}
+
+let cropmode_button = document.getElementById('Cropmode');
+cropmode_button.addEventListener('click', Cropmode);
+
+function Cropmode(){
+  
+	if(cropping_button.style.display=="inline"){
+		// noneで非表示
+    cropping_button.style.display ="none";
+    reset_button.style.display ="none";
+    cropmode_button.value="切り抜き機能を使用";
+    //scene.remove(cube);
+	}else{
+		// inlineで表示
+		cropping_button.style.display ="inline";
+    cropmode_button.value="切り抜き機能を使用中";
+    X_bar.style.display ="block";
+    Y_bar.style.display ="block";
+    Z_bar.style.display ="block";
+    X_bar2.style.display ="block";
+    Y_bar2.style.display ="block";
+    Z_bar2.style.display ="block";
+
+    tuikaURL.style.display ="none";
+    yariURL.style.display ="none";
+
+
+
+    cropmode_button.disabled=true;
+  
+    const geometry1 = new THREE.BoxGeometry(size.x,size.y,size.z);
+    cube = new THREE.Mesh(                                   
+     geometry1,                          
+     new THREE.MeshPhongMaterial({                                      
+               color: 0x990000, //球の色
+               wireframe: true
+      }));
+    objects.push(cube);
+    console.log(cube);
+    world = cube.getWorldPosition(new THREE.Vector3());
+    X1 =world.x+cube.geometry.parameters.width/2;
+    Y1 =world.y+cube.geometry.parameters.height/2;
+    Z1 =world.z+cube.geometry.parameters.depth/2;
+    X2 =world.x-cube.geometry.parameters.width/2;
+    Y2 =world.y-cube.geometry.parameters.height/2;
+    Z2 =world.z-cube.geometry.parameters.depth/2;
+
+    X1 =world.x+size.x*1/2;
+    Y1 =world.y+size.y*1/2;
+    Z1 =world.z+size.z*1/2;
+    X2 =world.x-size.x*1/2;
+    Y2 =world.y-size.y*1/2;
+    Z2 =world.z-size.z*1/2;
+    
+    //scene.add(cube);
+    scene.add( mesh );
+  }
+}
+
+////////////////////////////////////////////////////////////////////******************************************///////////////////////////////////////////////////////
+
+ // 実行
+ animate();
+ function animate(){
+  requestAnimationFrame(animate);//★追加 アニメーション実行
+  //obj.rotation.y += 0.002; //★追加 3Dオブジェクトを自動回転させる
+    controls.update();
+  renderer.render(scene, camera);
+    
+ };
+
+ // ★追加 画面リサイズ
+ onResize();
+ window.addEventListener('resize', onResize);
+
+ function onResize() {
+  var width = window.innerWidth;
+  var height = window.innerHeight/1.5;
+
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(width, height);
+
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+    
+ }
+</script>
+</div>
+</body>
+</html>
